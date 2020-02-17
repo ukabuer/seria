@@ -35,7 +35,37 @@ template <> auto registerObject<Inside>() {
 
 } // namespace seria
 
-TEST_CASE("register", "") {
+TEST_CASE("simple array", "[array]") {
+  {
+    int a[] = {1, 2, 3, 4, 5};
+    auto json = seria::serialize(a);
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    json.Accept(writer);
+    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
+  }
+
+  {
+    array<int, 5> a = {1, 2, 3, 4, 5};
+    auto json = seria::serialize(a);
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    json.Accept(writer);
+    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
+  }
+
+  {
+    vector<int> a = {1, 2, 3, 4};
+    a.push_back(5);
+    auto json = seria::serialize(a);
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    json.Accept(writer);
+    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
+  }
+}
+
+TEST_CASE("nested object", "serialize, deserialize") {
   Person person{100, 1.2345};
   {
     auto res = seria::serialize(person);
