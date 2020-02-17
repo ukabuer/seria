@@ -1,4 +1,5 @@
-#include <seria/formatter.hpp>
+#include <seria/deserialize.hpp>
+#include <seria/serialize.hpp>
 #define CATCH_CONFIG_MAIN
 #include "third_party/catch.hpp"
 #include <rapidjson/stringbuffer.h>
