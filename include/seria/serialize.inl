@@ -12,7 +12,8 @@ serialize(const T &obj) {
 }
 
 template <typename T>
-std::enable_if_t<is_string<T>::value> serialize(const T &obj) {
+std::enable_if_t<is_string<T>::value, rapidjson::Document>
+serialize(const T &obj) {
   rapidjson::Document json(rapidjson::kStringType);
   auto &allocator = json.GetAllocator();
 
