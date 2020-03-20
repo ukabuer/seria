@@ -1,6 +1,7 @@
 #include <seria/deserialize.hpp>
 #include <seria/serialize.hpp>
 #define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_FAST_COMPILE
 #include "third_party/catch.hpp"
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
