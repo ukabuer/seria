@@ -33,7 +33,7 @@
 #endif
 
 #if RAPIDJSON_SCHEMA_USE_INTERNALREGEX
-#include "include/rapidjson/internal/regex.h"
+#include "internal/regex.h"
 #elif RAPIDJSON_SCHEMA_USE_STDREGEX
 #include <regex>
 #endif

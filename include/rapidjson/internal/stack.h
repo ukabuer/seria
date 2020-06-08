@@ -15,7 +15,7 @@
 #ifndef RAPIDJSON_INTERNAL_STACK_H_
 #define RAPIDJSON_INTERNAL_STACK_H_
 
-#include "include/rapidjson/allocators.h"
+#include "../allocators.h"
 #include "swap.h"
 #include <cstddef>
 

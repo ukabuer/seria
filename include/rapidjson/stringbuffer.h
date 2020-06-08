@@ -15,14 +15,14 @@
 #ifndef RAPIDJSON_STRINGBUFFER_H_
 #define RAPIDJSON_STRINGBUFFER_H_
 
-#include "include/rapidjson/internal/stack.h"
 #include "stream.h"
+#include "internal/stack.h"
 
 #if RAPIDJSON_HAS_CXX11_RVALUE_REFS
 #include <utility> // std::move
 #endif
 
-#include "include/rapidjson/internal/stack.h"
+#include "internal/stack.h"
 
 #if defined(__clang__)
 RAPIDJSON_DIAG_PUSH

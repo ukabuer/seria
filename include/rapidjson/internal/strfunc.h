@@ -15,7 +15,7 @@
 #ifndef RAPIDJSON_INTERNAL_STRFUNC_H_
 #define RAPIDJSON_INTERNAL_STRFUNC_H_
 
-#include "include/rapidjson/stream.h"
+#include "../stream.h"
 #include <cwchar>
 
 RAPIDJSON_NAMESPACE_BEGIN

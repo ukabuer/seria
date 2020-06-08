@@ -15,7 +15,7 @@
 #ifndef RAPIDJSON_CLZLL_H_
 #define RAPIDJSON_CLZLL_H_
 
-#include "include/rapidjson/rapidjson.h"
+#include "../rapidjson.h"
 
 #if defined(_MSC_VER)
 #include <intrin.h>

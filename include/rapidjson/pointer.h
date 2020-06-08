@@ -16,7 +16,7 @@
 #define RAPIDJSON_POINTER_H_
 
 #include "document.h"
-#include "include/rapidjson/internal/itoa.h"
+#include "internal/itoa.h"
 
 #ifdef __clang__
 RAPIDJSON_DIAG_PUSH
