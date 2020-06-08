@@ -7,7 +7,6 @@ project(
 )
 
 include(cmake/utils.cmake)
-include(third_party/RapidJSON.cmake)
 
 add_library(seria INTERFACE)
 add_library(seria::seria ALIAS seria)
@@ -15,7 +14,6 @@ target_include_directories(
     seria
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${rapidjson_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 target_compile_features(seria INTERFACE cxx_std_14)
