@@ -48,6 +48,8 @@ serialize(const T &obj) {
   constexpr size_t member_size =
       std::tuple_size<std::decay_t<decltype(members)>>::value;
 
+  static_assert(member_size != 0, "No registered members!");
+
   auto setter = [&obj, &document, &allocator](auto &member) {
     auto &field = obj.*(member.ptr);
     rapidjson::Value key(member.key, allocator);

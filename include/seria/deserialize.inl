@@ -50,6 +50,8 @@ deserialize(T &data, const rapidjson::Value &value) {
   constexpr size_t member_size =
       std::tuple_size<std::decay_t<decltype(members)>>::value;
 
+  static_assert(member_size != 0, "No registered members!");
+
   auto setter = [&data, &value](auto &member) {
     if (!value.HasMember(member.key)) {
       if (member.default_value == nullptr) {
