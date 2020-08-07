@@ -1,4 +1,7 @@
 #pragma once
+#include <rapidjson/document.h>
+#include <seria/object.hpp>
+#include <seria/type_traits.hpp>
 
 namespace seria {
 
@@ -43,7 +46,7 @@ serialize(const T &obj) {
   rapidjson::Document document(rapidjson::kObjectType);
   auto &allocator = document.GetAllocator();
 
-  auto &members = KeyValueRecords<T, decltype(registerObject<T>())>::members;
+  auto &members = KeyValueRecords<T, decltype(register_object<T>())>::members;
 
   constexpr size_t member_size =
       std::tuple_size<std::decay_t<decltype(members)>>::value;
@@ -51,17 +54,13 @@ serialize(const T &obj) {
   static_assert(member_size != 0, "No registered members!");
 
   auto setter = [&obj, &document, &allocator](auto &member) {
-    auto &field = obj.*(member.ptr);
-    rapidjson::Value key(member.key, allocator);
+    auto &field = obj.*(member.m_ptr);
+    rapidjson::Value key(member.m_key, allocator);
     rapidjson::Value value(serialize(field).Move(), allocator);
     document.AddMember(key, value, allocator);
   };
 
-  apply(
-      [&setter](auto &&... args) {
-        for_each_arg(setter, std::forward<decltype(args)>(args)...);
-      },
-      members, std::make_index_sequence<member_size>());
+  for_each(setter, members, std::make_index_sequence<member_size>());
 
   return document;
 }

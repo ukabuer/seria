@@ -1,6 +1,7 @@
 #pragma once
 #include <rapidjson/document.h>
-#include <seria/utils.hpp>
+#include <seria/object.hpp>
+#include <seria/type_traits.hpp>
 
 namespace seria {
 

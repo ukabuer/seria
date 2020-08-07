@@ -1,4 +1,7 @@
 #pragma once
+#include <rapidjson/document.h>
+#include <seria/object.hpp>
+#include <seria/type_traits.hpp>
 
 namespace seria {
 
@@ -45,7 +48,7 @@ template <typename T>
 std::enable_if_t<is_object<T>::value>
 deserialize(T &data, const rapidjson::Value &value) {
   auto &members =
-      KeyValueRecords<T, decltype(registerObject<std::decay_t<T>>())>::members;
+      KeyValueRecords<T, decltype(register_object<std::decay_t<T>>())>::members;
 
   constexpr size_t member_size =
       std::tuple_size<std::decay_t<decltype(members)>>::value;
@@ -53,23 +56,19 @@ deserialize(T &data, const rapidjson::Value &value) {
   static_assert(member_size != 0, "No registered members!");
 
   auto setter = [&data, &value](auto &member) {
-    if (!value.HasMember(member.key)) {
-      if (member.default_value == nullptr) {
-        throw std::runtime_error(std::string("should have ") + member.key);
+    if (!value.HasMember(member.m_key)) {
+      if (member.m_default_value == nullptr) {
+        throw std::runtime_error(std::string("should have ") + member.m_key);
       }
 
-      data.*(member.ptr) = *member.default_value;
+      data.*(member.m_ptr) = *member.m_default_value;
       return;
     }
 
-    deserialize(data.*(member.ptr), value[member.key]);
+    deserialize(data.*(member.m_ptr), value[member.m_key]);
   };
 
-  apply(
-      [&setter](auto &&... args) {
-        for_each_arg(setter, std::forward<decltype(args)>(args)...);
-      },
-      members, std::make_index_sequence<member_size>());
+  for_each(setter, members, std::make_index_sequence<member_size>());
 }
 
 } // namespace seria

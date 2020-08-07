@@ -1,10 +1,10 @@
-#include <seria/deserialize.hpp>
-#include <seria/serialize.hpp>
 #define CATCH_CONFIG_MAIN
 #define CATCH_CONFIG_FAST_COMPILE
 #include "third_party/catch.hpp"
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+#include <seria/deserialize.hpp>
+#include <seria/serialize.hpp>
 
 using namespace std;
 
@@ -22,16 +22,16 @@ struct Person {
 
 namespace seria {
 
-template <> auto registerObject<Person>() {
-  return std::make_tuple(member("age", &Person::age),
+template <> auto register_object<Person>() {
+  return std::make_tuple(member("age", &Person::age, std::make_unique<int>(50)),
                          member("value", &Person::value),
                          member("inside", &Person::inside));
 }
 
-template <> auto registerObject<Inside>() {
-  return std::make_tuple(member("i_age", &Inside::i_age),
-                         member("i_value", &Inside::i_value),
-                         member("i_v", &Inside::i_v));
+template <> auto register_object<Inside>() {
+  return std::make_tuple(
+      member("i_age", &Inside::i_age, std::make_unique<int>(100)),
+      member("i_value", &Inside::i_value), member("i_v", &Inside::i_v));
 }
 
 } // namespace seria
@@ -86,4 +86,19 @@ TEST_CASE("nested object", "serialize, deserialize") {
   REQUIRE(person.age == 0);
   REQUIRE(person.value == 233.0f);
   REQUIRE(person.inside.i_age == 233);
+}
+
+TEST_CASE("default value", "deserialize") {
+  Person person{};
+
+  const char *str =
+      R"({"value":233.0,"inside":{"i_value":0.233,"i_v":[6,66,666]}})";
+
+  rapidjson::Document document;
+  document.Parse(str);
+  seria::deserialize(person, document);
+
+  REQUIRE(person.age == 50);
+  REQUIRE(person.value == 233.0f);
+  REQUIRE(person.inside.i_age == 100);
 }
