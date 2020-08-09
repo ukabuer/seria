@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <functional>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -10,21 +11,37 @@
 namespace seria {
 
 template <typename Object, typename T> struct Member {
-  const char *m_key;
-  T Object::*m_ptr;
+  const char *m_key = "";
+  T Object::*m_ptr = nullptr;
   std::unique_ptr<T> m_default_value;
   using Type = T;
+};
 
-  template <typename _Object = Object, typename _T = T>
-  Member(const char *key, _T _Object::*ptr,
-         std::unique_ptr<_T> default_value = nullptr)
-      : m_key(key), m_ptr(ptr), m_default_value(std::move(default_value)) {}
+template <typename Object, typename TargetType, typename InputType>
+struct MemberWithTransform {
+  const char *m_key = "";
+  TargetType Object::*m_ptr = nullptr;
+  std::unique_ptr<TargetType> m_default_value;
+  std::function<TargetType(const InputType &)> m_transform = nullptr;
+  std::function<InputType(const TargetType &)> m_revert = nullptr;
+  using Type = TargetType;
+  using mInputType = InputType;
 };
 
 template <typename Object, typename T>
 constexpr auto member(const char *key, T Object::*ptr,
                       std::unique_ptr<T> default_value = nullptr) {
   return Member<Object, T>{key, ptr, move(default_value)};
+}
+
+template <typename Object, typename TargetType, typename InputType>
+constexpr auto
+member(const char *key, TargetType Object::*ptr,
+       std::unique_ptr<TargetType> default_value,
+       const std::function<TargetType(const InputType &)> &tansform,
+       const std::function<InputType(const TargetType &)> &revert) {
+  return MemberWithTransform<Object, TargetType, InputType>{
+      key, ptr, move(default_value), tansform, revert};
 }
 
 template <typename T, typename TupleType> struct KeyValueRecords {

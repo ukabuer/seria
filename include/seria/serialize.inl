@@ -40,6 +40,27 @@ serialize(const T &obj) {
   return json;
 }
 
+template <typename Object, typename T>
+rapidjson::Value revert_helper(const Object &data,
+                               rapidjson::Document &document,
+                               const Member<Object, T> &member) {
+  auto &field = data.*(member.m_ptr);
+  rapidjson::Value value(serialize(field).Move(), document.GetAllocator());
+  return value;
+}
+
+template <typename Object, typename TargetType, typename InputType>
+rapidjson::Value revert_helper(
+    const Object &data, rapidjson::Document &document,
+    const MemberWithTransform<Object, TargetType, InputType> &member) {
+  auto &field = data.*(member.m_ptr);
+
+  rapidjson::Document tmp{};
+  tmp.Set(member.m_revert(field), document.GetAllocator());
+  rapidjson::Value value(tmp, document.GetAllocator());
+  return value;
+}
+
 template <typename T>
 std::enable_if_t<is_object<T>::value, rapidjson::Document>
 serialize(const T &obj) {
@@ -54,9 +75,8 @@ serialize(const T &obj) {
   static_assert(member_size != 0, "No registered members!");
 
   auto setter = [&obj, &document, &allocator](auto &member) {
-    auto &field = obj.*(member.m_ptr);
     rapidjson::Value key(member.m_key, allocator);
-    rapidjson::Value value(serialize(field).Move(), allocator);
+    auto value = revert_helper(obj, document, member);
     document.AddMember(key, value, allocator);
   };
 

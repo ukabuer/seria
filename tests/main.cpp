@@ -8,6 +8,8 @@
 
 using namespace std;
 
+enum class Gender { Male, Female };
+
 struct Inside {
   int i_age = 1;
   float i_value = 0.111;
@@ -17,6 +19,7 @@ struct Inside {
 struct Person {
   int age = 0;
   float value = 3.333;
+  Gender gener = Gender::Male;
   Inside inside{};
 };
 
@@ -25,6 +28,21 @@ namespace seria {
 template <> auto register_object<Person>() {
   return std::make_tuple(member("age", &Person::age, std::make_unique<int>(50)),
                          member("value", &Person::value),
+                         member<Person, Gender, const char *>(
+                             "gender", &Person::gener,
+                             std::make_unique<Gender>(Gender::Male),
+                             [](const char *const &v) -> Gender {
+                               if (v == string("m")) {
+                                 return Gender::Male;
+                               }
+                               return Gender::Female;
+                             },
+                             [](const Gender &v) -> const char * {
+                               if (v == Gender::Male) {
+                                 return "m";
+                               }
+                               return "f";
+                             }),
                          member("inside", &Person::inside));
 }
 
@@ -84,6 +102,7 @@ TEST_CASE("nested object", "serialize, deserialize") {
   seria::deserialize(person, document);
 
   REQUIRE(person.age == 0);
+  REQUIRE(person.gener == Gender::Male);
   REQUIRE(person.value == 233.0f);
   REQUIRE(person.inside.i_age == 233);
 }
