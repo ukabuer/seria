@@ -41,22 +41,22 @@ serialize(const T &obj) {
 }
 
 template <typename Object, typename T>
-rapidjson::Value revert_helper(const Object &data,
-                               rapidjson::Document &document,
-                               const Member<Object, T> &member) {
+rapidjson::Value transform_helper(const Object &data,
+                                  rapidjson::Document &document,
+                                  const Member<Object, T> &member) {
   auto &field = data.*(member.m_ptr);
   rapidjson::Value value(serialize(field).Move(), document.GetAllocator());
   return value;
 }
 
 template <typename Object, typename TargetType, typename InputType>
-rapidjson::Value revert_helper(
+rapidjson::Value transform_helper(
     const Object &data, rapidjson::Document &document,
     const MemberWithTransform<Object, TargetType, InputType> &member) {
   auto &field = data.*(member.m_ptr);
 
   rapidjson::Document tmp{};
-  tmp.Set(member.m_revert(field), document.GetAllocator());
+  tmp.Set(member.m_transform(field), document.GetAllocator());
   rapidjson::Value value(tmp, document.GetAllocator());
   return value;
 }
@@ -76,7 +76,7 @@ serialize(const T &obj) {
 
   auto setter = [&obj, &document, &allocator](auto &member) {
     rapidjson::Value key(member.m_key, allocator);
-    auto value = revert_helper(obj, document, member);
+    auto value = transform_helper(obj, document, member);
     document.AddMember(key, value, allocator);
   };
 

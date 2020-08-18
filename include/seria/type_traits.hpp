@@ -21,7 +21,7 @@ struct is_array<std::array<T, N>> : std::true_type {};
 
 template <typename T, size_t N> struct is_array<T[N]> : std::true_type {};
 
-template <typename T, typename _ = void> struct is_string : std::false_type {};
+template <typename T> struct is_string : std::false_type {};
 
 template <> struct is_string<std::string> : std::true_type {};
 
