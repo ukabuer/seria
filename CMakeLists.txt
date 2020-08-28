@@ -41,7 +41,9 @@ if (SERIA_INSTALL)
       EXPORT seria-targets
   )
   install(
-      DIRECTORY ${PROJECT_SOURCE_DIR}/include/seria
+      DIRECTORY
+        ${PROJECT_SOURCE_DIR}/include/seria
+        ${PROJECT_SOURCE_DIR}/include/rapidjson
       DESTINATION include
   )
   install(
