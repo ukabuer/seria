@@ -12,13 +12,13 @@ enum class Gender { Male, Female };
 
 struct Inside {
   int i_age = 1;
-  float i_value = 0.111;
+  float i_value = 1.0f;
   std::vector<int> i_v = {1, 2, 3, 4, 5};
 };
 
 struct Person {
-  int age = 0;
-  float value = 3.333;
+  int age = 1;
+  float value = 1.0f;
   Gender gener = Gender::Male;
   Inside inside{};
 };
@@ -32,16 +32,16 @@ template <> auto register_object<Person>() {
                              "gender", &Person::gener,
                              std::make_unique<Gender>(Gender::Male),
                              [](const char *const &v) -> Gender {
-                               if (v == string("m")) {
+                               if (std::strcmp(v, "M") == 0) {
                                  return Gender::Male;
                                }
                                return Gender::Female;
                              },
                              [](const Gender &v) -> const char * {
                                if (v == Gender::Male) {
-                                 return "m";
+                                 return "M";
                                }
-                               return "f";
+                               return "F";
                              }),
                          member("inside", &Person::inside));
 }
@@ -85,7 +85,7 @@ TEST_CASE("simple array", "[array]") {
 }
 
 TEST_CASE("nested object", "serialize, deserialize") {
-  Person person{100, 1.2345};
+  Person person{100, 2.0f};
   {
     auto res = seria::serialize(person);
     rapidjson::StringBuffer buffer;
@@ -95,16 +95,19 @@ TEST_CASE("nested object", "serialize, deserialize") {
   }
 
   const char *str =
-      R"({"age":0,"value":233.0,"inside":{"i_age":233,"i_value":0.233,"i_v":[6,66,666]}})";
+      R"({"age":0,"value":233.0,"gender":"F","inside":{"i_age":233,"i_value":0.233,"i_v":[6,66,666]}})";
 
   rapidjson::Document document;
   document.Parse(str);
   seria::deserialize(person, document);
 
   REQUIRE(person.age == 0);
-  REQUIRE(person.gener == Gender::Male);
+  REQUIRE(person.gener == Gender::Female);
   REQUIRE(person.value == 233.0f);
   REQUIRE(person.inside.i_age == 233);
+  REQUIRE(person.inside.i_value == 0.233f);
+  REQUIRE((person.inside.i_v[0] == 6 && person.inside.i_v[1] == 66 &&
+           person.inside.i_v[2] == 666));
 }
 
 TEST_CASE("default value", "deserialize") {
@@ -119,5 +122,6 @@ TEST_CASE("default value", "deserialize") {
 
   REQUIRE(person.age == 50);
   REQUIRE(person.value == 233.0f);
+  REQUIRE(person.gener == Gender::Male);
   REQUIRE(person.inside.i_age == 100);
 }
