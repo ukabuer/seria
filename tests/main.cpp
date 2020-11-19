@@ -1,8 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #define CATCH_CONFIG_FAST_COMPILE
 #include "third_party/catch.hpp"
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 #include <seria/deserialize.hpp>
 #include <seria/serialize.hpp>
 
@@ -29,18 +27,17 @@ enum class Child { Boy, Girl };
 namespace seria {
 
 template <> auto register_object<Person>() {
-  return std::make_tuple(
-      member("age", &Person::age, std::make_unique<int>(50)),
-      member("value", &Person::value),
-      member("gender", &Person::gener, std::make_unique<Gender>(Gender::Male)),
-      member("test_uint", &Person::test_uint),
-      member("inside", &Person::inside));
+  return std::make_tuple(member("age", &Person::age, 50),
+                         member("value", &Person::value),
+                         member("gender", &Person::gener, Gender::Male),
+                         member("test_uint", &Person::test_uint),
+                         member("inside", &Person::inside));
 }
 
 template <> auto register_object<Inside>() {
-  return std::make_tuple(
-      member("i_age", &Inside::i_age, std::make_unique<int>(100)),
-      member("i_value", &Inside::i_value), member("i_v", &Inside::i_v));
+  return std::make_tuple(member("i_age", &Inside::i_age, 100),
+                         member("i_value", &Inside::i_value),
+                         member("i_v", &Inside::i_v));
 }
 
 template <> rapidjson::Document serialize(const Child &data) {
@@ -69,45 +66,31 @@ template <> void deserialize(Child &data, const rapidjson::Value &json) {
 
 namespace seria {} // namespace seria
 
-TEST_CASE("serialize simple arrays", "[serialize]") {
-  {
-    int a[] = {1, 2, 3, 4, 5};
-    auto json = seria::serialize(a);
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    json.Accept(writer);
-    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
-  }
+TEST_CASE("serialize c style array", "[serialize]") {
+  int a[] = {1, 2, 3, 4, 5};
+  auto str = seria::to_string(a);
+  REQUIRE(str == "[1,2,3,4,5]");
+}
 
-  {
-    array<int, 5> a = {1, 2, 3, 4, 5};
-    auto json = seria::serialize(a);
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    json.Accept(writer);
-    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
-  }
+TEST_CASE("serialize std::array", "[serialize]") {
+  array<int, 5> a = {1, 2, 3, 4, 5};
+  auto str = seria::to_string(a);
+  REQUIRE(str == "[1,2,3,4,5]");
+}
 
-  {
-    vector<int> a = {1, 2, 3, 4};
-    a.push_back(5);
-    auto json = seria::serialize(a);
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    json.Accept(writer);
-    REQUIRE(string("[1,2,3,4,5]") == buffer.GetString());
-  }
+TEST_CASE("serialize std::vector", "[serialize]") {
+  vector<int> a = {1, 2, 3, 4};
+  a.push_back(5);
+  auto str = seria::to_string(a);
+  REQUIRE(str == "[1,2,3,4,5]");
 }
 
 TEST_CASE("serialize a nested object", "[serialize]") {
   Person person{100, 2.0f};
-  auto res = seria::serialize(person);
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  res.Accept(writer);
+  auto res = seria::to_string(person);
   std::string target =
       R"({"age":100,"value":2.0,"gender":0,"test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
-  REQUIRE(target == buffer.GetString());
+  REQUIRE(target == res);
 }
 
 TEST_CASE("deserialize nested object", "[deserialize]") {

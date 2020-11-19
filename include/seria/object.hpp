@@ -18,9 +18,14 @@ template <typename Object, typename T> struct Member {
 };
 
 template <typename Object, typename T>
-constexpr auto member(const char *key, T Object::*ptr,
-                      std::unique_ptr<T> default_value = nullptr) {
-  return Member<Object, T>{key, ptr, move(default_value)};
+constexpr auto member(const char *key, T Object::*ptr) {
+  return Member<Object, T>{key, ptr, nullptr};
+}
+
+template <typename Object, typename T>
+constexpr auto member(const char *key, T Object::*ptr, T &&default_value) {
+  return Member<Object, T>{key, ptr,
+                           std::make_unique<T>(std::forward<T>(default_value))};
 }
 
 template <typename T, typename TupleType> struct KeyValueRecords {

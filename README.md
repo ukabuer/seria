@@ -2,11 +2,11 @@
 Serialize/deserialize C++ data structure to/from JSON, no RTTI.
 
 Support
-- Array & Object
-- Nested data structure
-- Customize label for object member
-- Default value during deserialize
-- Transformer for enum value
+- boolean, integer, float/double, enum, std::string/C string, std::array/std::vector/C array, and struct/class
+- nested data structure
+- customize label for object member
+- default value during deserialize
+- customize rule for enum/object
 
 Usage:
 ```c++
@@ -14,6 +14,7 @@ struct Inside {
   float value = 1.0f;
   std::vector<int> arr = {1, 2, 3};
 };
+
 struct Test {
   int value = 233;
   Inside inside;
@@ -22,7 +23,7 @@ struct Test {
 // register your object
 namespace seria {
 template <> auto register_object<Test>() {
-  return std::make_tuple(member("value", &Test::value, std::make_unique<int>(666)), // default value
+  return std::make_tuple(member("value", &Test::value, 666), // default value
                          member("inside", &Test::inside)); // nested object
 }
 
@@ -33,11 +34,10 @@ template <> auto register_object<Inside>() {
 } // namespace seria
 
 Test obj {};
+auto str = seria::to_string(obj);
+// {"value":233,"inside":{"a_value":1.0,"arr":[1,2,3]}}
+
 auto json = seria::serialize(obj);
-
-rapidjson::StringBuffer buffer;
-rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-json.Accept(writer);
-
-cout << buffer.GetString() << endl; // {"value":233,"inside":{"a_value":1.0,"arr":[1,2,3]}}
+Test data {};
+seria::deserialize(data, json);
 ``` 
