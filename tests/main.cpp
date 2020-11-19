@@ -56,7 +56,7 @@ template <> auto register_object<Inside>() {
 
 } // namespace seria
 
-TEST_CASE("simple array", "[array]") {
+TEST_CASE("serialize simple arrays", "[serialize]") {
   {
     int a[] = {1, 2, 3, 4, 5};
     auto json = seria::serialize(a);
@@ -86,15 +86,19 @@ TEST_CASE("simple array", "[array]") {
   }
 }
 
-TEST_CASE("nested object", "serialize, deserialize") {
+TEST_CASE("serialize a nested object", "[serialize]") {
   Person person{100, 2.0f};
-  {
-    auto res = seria::serialize(person);
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    res.Accept(writer);
-    cout << buffer.GetString() << endl;
-  }
+  auto res = seria::serialize(person);
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  res.Accept(writer);
+  std::string target =
+      R"({"age":100,"value":2.0,"gender":"M","test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
+  REQUIRE(target == buffer.GetString());
+}
+
+TEST_CASE("deserialize nested object", "[deserialize]") {
+  Person person{100, 2.0f};
 
   const char *str =
       R"({"age":0,"value":233.0,"gender":"F","test_uint":2,"inside":{"i_age":233,"i_value":0.233,"i_v":[6,66,666]}})";
@@ -113,7 +117,7 @@ TEST_CASE("nested object", "serialize, deserialize") {
            person.inside.i_v[2] == 666));
 }
 
-TEST_CASE("default value", "deserialize") {
+TEST_CASE("deserialize a object with default value", "[deserialize]") {
   Person person{};
 
   const char *str =
@@ -127,4 +131,13 @@ TEST_CASE("default value", "deserialize") {
   REQUIRE(person.value == 233.0f);
   REQUIRE(person.gener == Gender::Male);
   REQUIRE(person.inside.i_age == 100);
+}
+
+TEST_CASE("stringify a person object", "[to_string]") {
+  Person person{};
+  auto str = seria::to_string(person);
+  std::string target =
+      R"({"age":1,"value":1.0,"gender":"M","test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
+
+  REQUIRE(str == target);
 }

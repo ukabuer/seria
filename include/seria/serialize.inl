@@ -85,4 +85,13 @@ serialize(const T &obj) {
   return document;
 }
 
+template <typename T> std::string to_string(const T &obj) {
+  auto serialized = seria::serialize(obj);
+  rapidjson::StringBuffer buffer;
+  buffer.Clear();
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  serialized.Accept(writer);
+  return std::string(buffer.GetString());
+}
+
 } // namespace seria
