@@ -10,6 +10,10 @@ std::enable_if_t<std::is_arithmetic<T>::value, rapidjson::Document>
 serialize(const T &obj);
 
 template <typename T>
+std::enable_if_t<std::is_enum<T>::value, rapidjson::Document>
+serialize(const T &obj);
+
+template <typename T>
 std::enable_if_t<is_string<T>::value, rapidjson::Document>
 serialize(const T &obj);
 

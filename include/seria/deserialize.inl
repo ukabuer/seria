@@ -46,6 +46,16 @@ deserialize(T &data, const rapidjson::Value &value) {
 }
 
 template <typename T>
+std::enable_if_t<std::is_enum<T>::value>
+deserialize(T &data, const rapidjson::Value &value) {
+  if (!value.IsInt()) {
+    throw std::runtime_error("wrong type in JSON, should be int");
+  }
+
+  data = static_cast<T>(value.GetInt());
+}
+
+template <typename T>
 std::enable_if_t<is_string<T>::value>
 deserialize(T &data, const rapidjson::Value &value) {
   if (!value.IsString()) {
@@ -87,50 +97,6 @@ deserialize(T &data, const rapidjson::Value &value) {
   }
 }
 
-template <typename Object, typename T>
-void revert_helper(Object &data, const rapidjson::Value &value,
-                   const Member<Object, T> &member) {
-  deserialize(data.*(member.m_ptr), value);
-}
-
-template <typename Object, typename TargetType, typename InputType>
-std::enable_if_t<std::is_arithmetic<InputType>::value> revert_helper(
-    Object &data, const rapidjson::Value &value,
-    const MemberWithTransform<Object, TargetType, InputType> &member) {
-  if (!value.template Is<InputType>()) {
-    throw std::runtime_error(std::string("wrong input type for ") +
-                             member.m_key);
-  }
-
-  data.*(member.m_ptr) = member.m_revert(value.template Get<InputType>());
-}
-
-template <typename Object, typename TargetType, typename InputType>
-std::enable_if_t<is_string<InputType>::value ||
-                 std::is_same<InputType, const char *>::value>
-revert_helper(
-    Object &data, const rapidjson::Value &value,
-    const MemberWithTransform<Object, TargetType, InputType> &member) {
-  if (!value.IsString()) {
-    throw std::runtime_error(std::string("wrong input type for ") +
-                             member.m_key);
-  }
-
-  data.*(member.m_ptr) = member.m_revert(value.GetString());
-}
-
-template <typename Object, typename TargetType, typename InputType>
-std::enable_if_t<!std::is_arithmetic<InputType>::value &&
-                 !(is_string<InputType>::value ||
-                   std::is_same<InputType, const char *>::value)>
-revert_helper(Object &, const rapidjson::Value &,
-              const MemberWithTransform<Object, TargetType, InputType> &) {
-  static_assert(!std::is_same<Object, Object>::value,
-                "object member with revert & transform function should have an"
-                "input type of "
-                "arithmetic or string");
-}
-
 template <typename T>
 std::enable_if_t<is_object<T>::value>
 deserialize(T &data, const rapidjson::Value &value) {
@@ -152,7 +118,7 @@ deserialize(T &data, const rapidjson::Value &value) {
       return;
     }
 
-    revert_helper(data, value[member.m_key], member);
+    deserialize(data.*(member.m_ptr), value[member.m_key]);
   };
 
   for_each(setter, members, std::make_index_sequence<member_size>());

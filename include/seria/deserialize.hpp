@@ -22,6 +22,10 @@ std::enable_if_t<is_float<T>::value> deserialize(T &data,
                                                  const rapidjson::Value &value);
 
 template <typename T>
+std::enable_if_t<std::is_enum<T>::value>
+deserialize(T &data, const rapidjson::Value &value);
+
+template <typename T>
 std::enable_if_t<is_string<T>::value>
 deserialize(T &data, const rapidjson::Value &value);
 

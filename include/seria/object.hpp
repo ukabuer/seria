@@ -17,30 +17,10 @@ template <typename Object, typename T> struct Member {
   using Type = T;
 };
 
-template <typename Object, typename TargetType, typename InputType>
-struct MemberWithTransform {
-  const char *m_key = "";
-  TargetType Object::*m_ptr = nullptr;
-  std::unique_ptr<TargetType> m_default_value;
-  std::function<TargetType(const InputType &)> m_revert = nullptr;
-  std::function<InputType(const TargetType &)> m_transform = nullptr;
-  using Type = TargetType;
-};
-
 template <typename Object, typename T>
 constexpr auto member(const char *key, T Object::*ptr,
                       std::unique_ptr<T> default_value = nullptr) {
   return Member<Object, T>{key, ptr, move(default_value)};
-}
-
-template <typename Object, typename TargetType, typename InputType>
-constexpr auto
-member(const char *key, TargetType Object::*ptr,
-       std::unique_ptr<TargetType> default_value,
-       const std::function<TargetType(const InputType &)> &revert,
-       const std::function<InputType(const TargetType &)> &transform) {
-  return MemberWithTransform<Object, TargetType, InputType>{
-      key, ptr, move(default_value), revert, transform};
 }
 
 template <typename T, typename TupleType> struct KeyValueRecords {
