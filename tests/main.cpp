@@ -159,3 +159,31 @@ TEST_CASE("customize enum deserialize rule", "[deserialize]") {
   REQUIRE(children[1] == Child::Girl);
   REQUIRE(children[2] == Child::Girl);
 }
+
+TEST_CASE("integer to float", "[deserialize]") {
+  std::string input = "-100";
+
+  rapidjson::Document json;
+  json.Parse(input.c_str());
+
+  float data = 0.0f;
+  seria::deserialize(data, json);
+
+  REQUIRE(data == -100.0f);
+}
+
+TEST_CASE("float to int should fail", "[deserialize]") {
+  std::string input = "-100.0";
+
+  rapidjson::Document json;
+  json.Parse(input.c_str());
+
+  int data = 0;
+  auto has_exception = false;
+  try {
+    seria::deserialize(data, json);
+  } catch (std::runtime_error &) {
+    has_exception = true;
+  }
+  REQUIRE(has_exception);
+}

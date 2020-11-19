@@ -38,11 +38,15 @@ deserialize(T &data, const rapidjson::Value &value) {
 template <typename T>
 std::enable_if_t<is_float<T>::value>
 deserialize(T &data, const rapidjson::Value &value) {
-  if (!value.Is<T>()) {
+  if (!value.Is<T>() && !value.IsInt()) {
     throw std::runtime_error("wrong type in JSON, should be float or double");
   }
 
-  data = value.Get<T>();
+  if (value.Is<T>()) {
+    data = value.Get<T>();
+  } else {
+    data = static_cast<T>(value.GetInt());
+  }
 }
 
 template <typename T>
