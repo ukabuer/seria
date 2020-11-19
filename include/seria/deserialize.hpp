@@ -6,8 +6,20 @@
 namespace seria {
 
 template <typename T>
-std::enable_if_t<std::is_arithmetic<T>::value>
+std::enable_if_t<is_boolean<T>::value>
 deserialize(T &data, const rapidjson::Value &value);
+
+template <typename T>
+std::enable_if_t<is_integer<T>::value>
+deserialize(T &data, const rapidjson::Value &value);
+
+template <typename T>
+std::enable_if_t<is_unsigned_integer<T>::value>
+deserialize(T &data, const rapidjson::Value &value);
+
+template <typename T>
+std::enable_if_t<is_float<T>::value> deserialize(T &data,
+                                                 const rapidjson::Value &value);
 
 template <typename T>
 std::enable_if_t<is_string<T>::value>

@@ -6,6 +6,23 @@
 
 namespace seria {
 
+template <typename T> struct is_integer : std::false_type {};
+template <> struct is_integer<int8_t> : std::true_type {};
+template <> struct is_integer<int16_t> : std::true_type {};
+template <> struct is_integer<int32_t> : std::true_type {};
+
+template <typename T> struct is_unsigned_integer : std::false_type {};
+template <> struct is_unsigned_integer<uint8_t> : std::true_type {};
+template <> struct is_unsigned_integer<uint16_t> : std::true_type {};
+template <> struct is_unsigned_integer<uint32_t> : std::true_type {};
+
+template <typename T> struct is_float : std::false_type {};
+template <> struct is_float<float> : std::true_type {};
+template <> struct is_float<double> : std::true_type {};
+
+template <typename T> struct is_boolean : std::false_type {};
+template <> struct is_boolean<bool> : std::true_type {};
+
 template <typename T, typename _ = void> struct is_vector : std::false_type {};
 
 template <typename T>

@@ -6,10 +6,40 @@
 namespace seria {
 
 template <typename T>
-std::enable_if_t<std::is_arithmetic<T>::value>
+std::enable_if_t<is_boolean<T>::value>
 deserialize(T &data, const rapidjson::Value &value) {
-  if (!value.IsBool() && !value.IsNumber()) {
-    throw std::runtime_error("wrong type in JSON, should be arithmetic");
+  if (!value.IsBool()) {
+    throw std::runtime_error("wrong type in JSON, should be boolean");
+  }
+
+  data = value.GetBool();
+}
+
+template <typename T>
+std::enable_if_t<is_integer<T>::value>
+deserialize(T &data, const rapidjson::Value &value) {
+  if (!value.IsInt()) {
+    throw std::runtime_error("wrong type in JSON, should be integer");
+  }
+
+  data = value.GetInt();
+}
+
+template <typename T>
+std::enable_if_t<is_unsigned_integer<T>::value>
+deserialize(T &data, const rapidjson::Value &value) {
+  if (!value.IsUint()) {
+    throw std::runtime_error("wrong type in JSON, should be unsigned integer");
+  }
+
+  data = value.GetUint();
+}
+
+template <typename T>
+std::enable_if_t<is_float<T>::value>
+deserialize(T &data, const rapidjson::Value &value) {
+  if (!value.Is<T>()) {
+    throw std::runtime_error("wrong type in JSON, should be float or double");
   }
 
   data = value.Get<T>();

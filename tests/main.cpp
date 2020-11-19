@@ -20,6 +20,7 @@ struct Person {
   int age = 1;
   float value = 1.0f;
   Gender gener = Gender::Male;
+  uint32_t test_uint = 1;
   Inside inside{};
 };
 
@@ -43,6 +44,7 @@ template <> auto register_object<Person>() {
                                }
                                return "F";
                              }),
+                         member("test_uint", &Person::test_uint),
                          member("inside", &Person::inside));
 }
 
@@ -95,7 +97,7 @@ TEST_CASE("nested object", "serialize, deserialize") {
   }
 
   const char *str =
-      R"({"age":0,"value":233.0,"gender":"F","inside":{"i_age":233,"i_value":0.233,"i_v":[6,66,666]}})";
+      R"({"age":0,"value":233.0,"gender":"F","test_uint":2,"inside":{"i_age":233,"i_value":0.233,"i_v":[6,66,666]}})";
 
   rapidjson::Document document;
   document.Parse(str);
@@ -104,6 +106,7 @@ TEST_CASE("nested object", "serialize, deserialize") {
   REQUIRE(person.age == 0);
   REQUIRE(person.gener == Gender::Female);
   REQUIRE(person.value == 233.0f);
+  REQUIRE(person.test_uint == 2);
   REQUIRE(person.inside.i_age == 233);
   REQUIRE(person.inside.i_value == 0.233f);
   REQUIRE((person.inside.i_v[0] == 6 && person.inside.i_v[1] == 66 &&
@@ -114,7 +117,7 @@ TEST_CASE("default value", "deserialize") {
   Person person{};
 
   const char *str =
-      R"({"value":233.0,"inside":{"i_value":0.233,"i_v":[6,66,666]}})";
+      R"({"value":233.0,"test_uint":2,"inside":{"i_value":0.233,"i_v":[6,66,666]}})";
 
   rapidjson::Document document;
   document.Parse(str);
