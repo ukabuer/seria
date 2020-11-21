@@ -1,6 +1,4 @@
-#define CATCH_CONFIG_MAIN
-#define CATCH_CONFIG_FAST_COMPILE
-#include "third_party/catch.hpp"
+#include <catch2/catch_all.hpp>
 #include <seria/deserialize.hpp>
 #include <seria/serialize.hpp>
 
