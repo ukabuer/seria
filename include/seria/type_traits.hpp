@@ -33,10 +33,14 @@ struct is_vector<T, std::enable_if_t<std::is_same<
 
 template <typename T> struct is_array : std::false_type {};
 
-template <typename T, size_t N>
-struct is_array<std::array<T, N>> : std::true_type {};
+template <typename T, size_t N> struct is_array<T[N]> : std::true_type {
+  constexpr static size_t size = N;
+};
 
-template <typename T, size_t N> struct is_array<T[N]> : std::true_type {};
+template <typename T, size_t N>
+struct is_array<std::array<T, N>> : std::true_type {
+  constexpr static size_t size = N;
+};
 
 template <typename T> struct is_string : std::false_type {};
 

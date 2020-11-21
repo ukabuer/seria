@@ -100,7 +100,7 @@ deserialize(T &data, const rapidjson::Value &value) {
   }
 
   const auto size = value.Capacity();
-  if (size != data.size()) {
+  if (size != is_array<T>::size) {
     throw error("the size of array is not same with target");
   }
 

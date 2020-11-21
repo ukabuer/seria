@@ -50,7 +50,7 @@ template <> rapidjson::Document serialize(const Child &data) {
 
 template <> void deserialize(Child &data, const rapidjson::Value &json) {
   if (!json.IsString()) {
-    throw std::runtime_error("invalid data type in json, should be string");
+    throw type_error("", "should be string");
   }
 
   if (std::strcmp("B", json.GetString()) == 0) {
@@ -83,12 +83,45 @@ TEST_CASE("serialize std::vector", "[serialize]") {
   REQUIRE(str == "[1,2,3,4,5]");
 }
 
-TEST_CASE("serialize a nested object", "[serialize]") {
-  Person person{100, 2.0f};
-  auto res = seria::to_string(person);
+TEST_CASE("customize enum serialize rule", "[serialize]") {
+  std::vector<Child> children{Child::Boy, Child::Girl, Child::Girl};
+  auto str = seria::to_string(children);
+  std::string target = R"(["B","G","G"])";
+
+  REQUIRE(str == target);
+}
+
+TEST_CASE("stringify a person object", "[to_string]") {
+  Person person{};
+  auto str = seria::to_string(person);
   std::string target =
-      R"({"age":100,"value":2.0,"gender":0,"test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
-  REQUIRE(target == res);
+      R"({"age":1,"value":1.0,"gender":0,"test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
+
+  REQUIRE(str == target);
+}
+
+TEST_CASE("deserialize c style array", "[deserialize]") {
+  const char *str = "[1,2,3]";
+  int a[] = {0, 0, 0};
+
+  rapidjson::Document document;
+  document.Parse(str);
+  seria::deserialize(a, document);
+
+  auto res = seria::to_string(a);
+  REQUIRE(res == "[1,2,3]");
+}
+
+TEST_CASE("deserialize std::array", "[deserialize]") {
+  const char *str = "[1,2,3]";
+  array<int, 3> a = {0, 0, 0};
+
+  rapidjson::Document document;
+  document.Parse(str);
+  seria::deserialize(a, document);
+
+  auto res = seria::to_string(a);
+  REQUIRE(res == "[1,2,3]");
 }
 
 TEST_CASE("deserialize nested object", "[deserialize]") {
@@ -127,23 +160,6 @@ TEST_CASE("deserialize a object with default value", "[deserialize]") {
   REQUIRE(person.inside.i_age == 100);
 }
 
-TEST_CASE("stringify a person object", "[to_string]") {
-  Person person{};
-  auto str = seria::to_string(person);
-  std::string target =
-      R"({"age":1,"value":1.0,"gender":0,"test_uint":1,"inside":{"i_age":1,"i_value":1.0,"i_v":[1,2,3,4,5]}})";
-
-  REQUIRE(str == target);
-}
-
-TEST_CASE("customize enum serialize rule", "[serialize]") {
-  std::vector<Child> children{Child::Boy, Child::Girl, Child::Girl};
-  auto str = seria::to_string(children);
-  std::string target = R"(["B","G","G"])";
-
-  REQUIRE(str == target);
-}
-
 TEST_CASE("customize enum deserialize rule", "[deserialize]") {
   std::vector<Child> children{};
   std::string target = R"(["B","G","G"])";
@@ -180,8 +196,37 @@ TEST_CASE("float to int should fail", "[deserialize]") {
   auto has_exception = false;
   try {
     seria::deserialize(data, json);
-  } catch (std::runtime_error &) {
+  } catch (seria::type_error &err) {
+    REQUIRE(std::strcmp(err.desired_type(), "integer") == 0);
     has_exception = true;
   }
   REQUIRE(has_exception);
+}
+
+TEST_CASE("deserialize type error", "[deserialize]") {
+  Person person{};
+  auto str =
+      R"({"value":1,"test_uint":2,"inside":{"i_value":1,"i_v":[1,1.0]}})";
+
+  rapidjson::Document json;
+  json.Parse(str);
+  try {
+    seria::deserialize(person, json);
+  } catch (seria::type_error &err) {
+    REQUIRE(std::strcmp(err.path(), "inside.i_v.1") == 0);
+    REQUIRE(std::strcmp(err.desired_type(), "integer") == 0);
+  }
+}
+
+TEST_CASE("deserialize missing value", "[deserialize]") {
+  Person person{};
+  auto str = R"({"value":1,"test_uint":2,"inside":{"i_v":[1,1.0]}})";
+
+  rapidjson::Document json;
+  json.Parse(str);
+  try {
+    seria::deserialize(person, json);
+  } catch (seria::error &err) {
+    REQUIRE(std::strcmp(err.path(), "inside.i_value") == 0);
+  }
 }
