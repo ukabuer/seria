@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.11)
 project(
     seria
     VERSION 0.1.0
-    LANGUAGES CXX
+    LANGUAGES CXX C
 )
 
 set(MASTER_PROJECT OFF)
@@ -20,6 +20,8 @@ if (UNIX)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
   set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
 endif ()
+
+include(${PROJECT_SOURCE_DIR}/third_party/mpack.cmake)
 
 add_library(seria INTERFACE)
 add_library(seria::seria ALIAS seria)

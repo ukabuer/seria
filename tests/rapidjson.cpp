@@ -15,7 +15,7 @@ enum class Gender { Male = 0, Female = 1 };
 struct Person {
   int age = 1;
   float value = 1.0f;
-  Gender gener = Gender::Male;
+  Gender gender = Gender::Male;
   uint32_t test_uint = 1;
   Inside inside{};
 };
@@ -27,7 +27,7 @@ namespace seria {
 template <> auto register_object<Person>() {
   return std::make_tuple(member("age", &Person::age, 50),
                          member("value", &Person::value),
-                         member("gender", &Person::gener, Gender::Male),
+                         member("gender", &Person::gender, Gender::Male),
                          member("test_uint", &Person::test_uint),
                          member("inside", &Person::inside));
 }
@@ -135,7 +135,7 @@ TEST_CASE("deserialize nested object", "[deserialize]") {
   seria::deserialize(person, document);
 
   REQUIRE(person.age == 0);
-  REQUIRE(person.gener == Gender::Female);
+  REQUIRE(person.gender == Gender::Female);
   REQUIRE(person.value == 233.0f);
   REQUIRE(person.test_uint == 2);
   REQUIRE(person.inside.i_age == 233);
@@ -156,7 +156,7 @@ TEST_CASE("deserialize a object with default value", "[deserialize]") {
 
   REQUIRE(person.age == 50);
   REQUIRE(person.value == 233.0f);
-  REQUIRE(person.gener == Gender::Male);
+  REQUIRE(person.gender == Gender::Male);
   REQUIRE(person.inside.i_age == 100);
 }
 
