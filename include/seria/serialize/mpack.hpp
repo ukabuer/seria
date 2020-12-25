@@ -26,8 +26,14 @@ std::enable_if_t<is_array<T>::value> serialize(const T &obj,
                                                mpack_writer_t *writer);
 
 template <typename T>
-std::enable_if_t<is_vector<T>::value> serialize(const T &obj,
-                                                mpack_writer_t *writer);
+std::enable_if_t<is_vector<T>::value &&
+                 std::is_same<typename T::value_type, uint8_t>::value>
+serialize(const T &obj, mpack_writer_t *writer);
+
+template <typename T>
+std::enable_if_t<is_vector<T>::value &&
+                 !std::is_same<typename T::value_type, uint8_t>::value>
+serialize(const T &obj, mpack_writer_t *writer);
 
 } // namespace seria
 

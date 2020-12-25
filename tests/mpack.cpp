@@ -137,6 +137,23 @@ TEST_CASE("customize enum serialize rule", "[serialize]") {
   free(data);
 }
 
+TEST_CASE("binary bytes", "[serialize]") {
+  std::vector<uint8_t> value{8, 7, 6, 5, 4};
+
+  char *data = nullptr;
+  size_t total = 0;
+  mpack_writer_t writer;
+  mpack_writer_init_growable(&writer, &data, &total);
+  seria::serialize(value, &writer);
+  auto result = mpack_writer_destroy(&writer);
+
+  uint8_t target[] = {0xc4, 0x05, 0x08, 0x07, 0x06, 0x05, 0x04};
+  REQUIRE(result == mpack_ok);
+  REQUIRE(std::memcmp(data, target, total) == 0);
+
+  free(data);
+}
+
 TEST_CASE("deserialize c style array", "[deserialize]") {
   uint8_t data[] = {0x93, 0x01, 0x02, 0x03};
   int a[] = {0, 0, 0};

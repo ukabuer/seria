@@ -56,13 +56,22 @@ std::enable_if_t<is_array<T>::value> serialize(const T &obj,
 }
 
 template <typename T>
-std::enable_if_t<is_vector<T>::value> serialize(const T &obj,
-                                                mpack_writer_t *writer) {
+std::enable_if_t<is_vector<T>::value &&
+                 !std::is_same<typename T::value_type, uint8_t>::value>
+serialize(const T &obj, mpack_writer_t *writer) {
   mpack_start_array(writer, obj.size());
   for (auto &value : obj) {
     serialize<std::decay_t<decltype(value)>>(value, writer);
   }
   mpack_finish_array(writer);
+}
+
+template <typename T>
+std::enable_if_t<is_vector<T>::value &&
+                 std::is_same<typename T::value_type, uint8_t>::value>
+serialize(const T &obj, mpack_writer_t *writer) {
+  mpack_write_bin(writer, reinterpret_cast<const char *>(obj.data()),
+                  obj.size());
 }
 
 } // namespace seria
