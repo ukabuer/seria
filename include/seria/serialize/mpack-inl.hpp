@@ -21,7 +21,7 @@ std::enable_if_t<std::is_enum<T>::value> serialize(const T &obj,
 template <typename T>
 std::enable_if_t<is_string<T>::value> serialize(const T &obj,
                                                 mpack_writer_t *writer) {
-  mpack_write(writer, obj);
+  mpack_write_str(writer, obj.c_str(), obj.size());
 }
 
 template <typename T>

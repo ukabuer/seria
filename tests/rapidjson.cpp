@@ -91,6 +91,12 @@ TEST_CASE("customize enum serialize rule", "[serialize]") {
   REQUIRE(str == target);
 }
 
+TEST_CASE("string", "[serialize]") {
+  std::string value = "hello";
+  auto str = seria::to_string(value);
+  REQUIRE(str == R"("hello")");
+}
+
 TEST_CASE("stringify a person object", "[to_string]") {
   Person person{};
   auto str = seria::to_string(person);

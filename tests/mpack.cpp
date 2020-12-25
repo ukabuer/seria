@@ -154,6 +154,23 @@ TEST_CASE("binary bytes", "[serialize]") {
   free(data);
 }
 
+TEST_CASE("string", "[serialize]") {
+  std::string value = "hello";
+
+  char *data = nullptr;
+  size_t total = 0;
+  mpack_writer_t writer;
+  mpack_writer_init_growable(&writer, &data, &total);
+  seria::serialize(value, &writer);
+  auto result = mpack_writer_destroy(&writer);
+
+  uint8_t target[] = {0xa5, 0x68, 0x65, 0x6c, 0x6c, 0x6f};
+  REQUIRE(result == mpack_ok);
+  REQUIRE(std::memcmp(data, target, total) == 0);
+
+  free(data);
+}
+
 TEST_CASE("deserialize c style array", "[deserialize]") {
   uint8_t data[] = {0x93, 0x01, 0x02, 0x03};
   int a[] = {0, 0, 0};
