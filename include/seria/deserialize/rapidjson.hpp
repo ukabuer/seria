@@ -1,7 +1,11 @@
 #pragma once
-#include <rapidjson/document.h>
 #include <seria/object.hpp>
 #include <seria/type_traits.hpp>
+#ifdef SERIA_USE_EXTERNAL_RAPIDJSON
+#include <rapidjson/document.h>
+#else
+#include <seria/rapidjson/document.h>
+#endif
 
 namespace seria {
 
@@ -43,4 +47,4 @@ deserialize(T &data, const rapidjson::Value &value);
 
 } // namespace seria
 
-#include "deserialize.inl"
+#include <seria/deserialize/rapidjson-inl.hpp>

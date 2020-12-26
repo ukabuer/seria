@@ -52,7 +52,6 @@ template <> void deserialize(Child &data, const mpack_node_t &node) {
     throw type_error("", "should be string");
   }
 
-  auto len = mpack_node_strlen(node);
   if (node.data->type != mpack_type_str) {
     throw type_error("", "should be `B` or `G`");
   }
@@ -243,10 +242,6 @@ TEST_CASE("deserialize a object with default value", "[deserialize]") {
   mpack_tree_init_data(&tree, reinterpret_cast<const char *>(data),
                        sizeof(data));
   mpack_tree_parse(&tree);
-  mpack_tree_set_error_handler(&tree,
-                               [](mpack_tree_t *tree, mpack_error_t error) {
-                                 std::cout << error << std::endl;
-                               });
 
   mpack_node_t root = mpack_tree_root(&tree);
   seria::deserialize(person, root);

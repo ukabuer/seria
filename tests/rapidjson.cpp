@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
-#include <seria/deserialize.hpp>
-#include <seria/serialize.hpp>
+#include <seria/deserialize/rapidjson.hpp>
+#include <seria/serialize/rapidjson.hpp>
 
 using namespace std;
 

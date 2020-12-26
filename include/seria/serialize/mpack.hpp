@@ -37,4 +37,4 @@ serialize(const T &obj, mpack_writer_t *writer);
 
 } // namespace seria
 
-#include "mpack-inl.hpp"
+#include <seria/serialize/mpack-inl.hpp>

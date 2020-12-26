@@ -1,9 +1,15 @@
 #pragma once
+#include <seria/object.hpp>
+#include <seria/type_traits.hpp>
+#ifdef SERIA_USE_EXTERNAL_RAPIDJSON
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-#include <seria/object.hpp>
-#include <seria/type_traits.hpp>
+#else
+#include <seria/rapidjson/document.h>
+#include <seria/rapidjson/stringbuffer.h>
+#include <seria/rapidjson/writer.h>
+#endif
 
 namespace seria {
 

@@ -11,6 +11,9 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(MASTER_PROJECT ON)
 endif ()
 
+option(SERIA_USE_EXTERNAL_RAPIDJSON "use external rapidjson" OFF)
+option(SERIA_ENABLE_MPACK "enable mpack(msgpack) support" ON)
+option(SERIA_USE_EXTERNAL_MPACK "use external mpack" OFF)
 option(SERIA_BUILD_TESTS "whether to build tests" ${MASTER_PROJECT})
 option(SERIA_INSTALL "whether to install seria" ${MASTER_PROJECT})
 option(FETCHCONTENT_QUIET "" OFF)
@@ -21,7 +24,9 @@ if (UNIX)
   set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=leak -fsanitize=undefined")
 endif ()
 
-include(${PROJECT_SOURCE_DIR}/third_party/mpack.cmake)
+if (SERIA_ENABLE_MPACK AND NOT SERIA_USE_EXTERNAL_MPACK)
+  include(${PROJECT_SOURCE_DIR}/third_party/mpack.cmake)
+endif ()
 
 add_library(seria INTERFACE)
 add_library(seria::seria ALIAS seria)
@@ -32,6 +37,9 @@ target_include_directories(
     $<INSTALL_INTERFACE:include>
 )
 target_compile_features(seria INTERFACE cxx_std_14)
+if (SERIA_USE_EXTERNAL_RAPIDJSON)
+  target_compile_definitions(seria INTERFACE SERIA_USE_EXTERNAL_RAPIDJSON)
+endif ()
 
 if (SERIA_BUILD_TESTS)
   add_subdirectory(tests)
@@ -44,8 +52,8 @@ if (SERIA_INSTALL)
   )
   install(
       DIRECTORY
-        ${PROJECT_SOURCE_DIR}/include/seria
-        ${PROJECT_SOURCE_DIR}/include/rapidjson
+      ${PROJECT_SOURCE_DIR}/include/seria
+      ${PROJECT_SOURCE_DIR}/include/rapidjson
       DESTINATION include
   )
   install(
