@@ -71,7 +71,7 @@ serialize(const T &obj) {
   static_assert(member_size != 0, "No registered members!");
 
   auto setter = [&obj, &document, &allocator](auto &member) {
-    auto &field = obj.*(member.m_ptr);
+    const auto &field = member.get(obj);
     rapidjson::Value key(member.m_key, allocator);
     rapidjson::Value value(serialize(field).Move(), allocator);
     document.AddMember(key, value, allocator);

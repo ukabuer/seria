@@ -148,14 +148,16 @@ std::enable_if_t<is_object<T>::value> deserialize(T &data,
       if (member.m_default_value == nullptr) {
         throw error(member.m_key, "missing value");
       }
-
-      data.*(member.m_ptr) = *member.m_default_value;
+      
+      member.set(data, *member.m_default_value);
       return;
     }
 
     try {
       auto value_node = mpack_node_map_cstr(node, member.m_key);
-      deserialize(data.*(member.m_ptr), value_node);
+      typename std::remove_reference_t<decltype(member)>::Type tmp_val;
+      deserialize(tmp_val, value_node);
+      member.set(data, tmp_val);
     } catch (type_error &err) {
       err.add_prefix(member.m_key);
       throw err;
