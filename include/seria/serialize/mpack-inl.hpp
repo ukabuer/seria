@@ -34,7 +34,7 @@ std::enable_if_t<is_object<T>::value> serialize(const T &obj,
   static_assert(member_size != 0, "No registered members!");
 
   auto setter = [&obj, writer](auto &member) {
-    auto &field = obj.*(member.m_ptr);
+    const auto &field = member.get(obj);
     mpack_write_str(writer, member.m_key, strlen(member.m_key));
     serialize(field, writer);
   };

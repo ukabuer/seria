@@ -21,6 +21,27 @@ struct Person {
   Inside inside{};
 };
 
+class User {
+private:
+  Gender gender = Gender::Male;
+public:
+  int age = 1;
+  double height = 180.0;
+  double value = 1.0;
+  
+  Gender get_gender() const {return gender;}
+  bool set_gender(const Gender& new_gender)  {
+    gender = new_gender; 
+    return gender == Gender::Male;
+  }
+  double get_value() const {return value;}
+  void set_value(double new_value)  { value = new_value;}
+  
+  double get_height() const {return height;}
+  void set_height(double new_value)  { height = new_value;}
+};
+
+
 enum class Child { Boy, Girl };
 
 namespace seria {
@@ -37,6 +58,14 @@ template <> auto register_object<Inside>() {
   return std::make_tuple(member("i_age", &Inside::i_age, 100),
                          member("i_value", &Inside::i_value),
                          member("i_v", &Inside::i_v));
+}
+
+
+template <> auto register_object<User>() {
+  return std::make_tuple(member("age", &User::age, 32),
+                         member("gender", &User::set_gender,  &User::get_gender, Gender::Female),
+                         member("value", &User::set_value, &User::get_value),
+                         member("height", &User::set_height, &User::get_height, 175.5));
 }
 
 template <> void serialize(const Child &data, mpack_writer_t *writer) {
@@ -343,4 +372,64 @@ TEST_CASE("deserialize missing value", "[deserialize]") {
   } catch (seria::error &err) {
     REQUIRE(std::strcmp(err.path(), "inside.i_value") == 0);
   }
+}
+
+
+TEST_CASE("stringify an object contains private fields", "[to_string]") {
+  User user{};
+  user.value = 3.6;
+  user.age = 27;
+  
+  size_t total = 0;  
+  char *data = nullptr;
+  mpack_writer_t writer;
+  mpack_writer_init_growable(&writer, &data, &total);
+  seria::serialize(user, &writer);
+  auto result = mpack_writer_destroy(&writer);
+  
+  uint8_t target[] = {0x84, 0xa3, 0x61, 0x67, 
+                      0x65,0x1b,0xa6, 0x67, 
+                      0x65, 0x6e, 0x64, 0x65,
+                      0x72, 0x00, 0xa5, 0x76,
+                      0x61, 0x6c,0x75, 0x65, 
+                      0xcb, 0x40, 0x0c, 0xcc,
+                      0xcc, 0xcc, 0xcc, 0xcc,
+                      0xcd, 0xa6,0x68, 0x65, 
+                      0x69, 0x67, 0x68, 0x74,
+                      0xcb, 0x40, 0x66, 0x80, 
+                      0x00, 0x00, 0x00, 0x00, 
+                      0x00};
+  REQUIRE(result == mpack_ok);
+  REQUIRE(std::memcmp(data, target, total) == 0);
+
+  free(data);
+}
+
+TEST_CASE("deserialize to an object with private fields", "[deserialize]") {
+  User user{};
+  
+  size_t total = 0;
+  uint8_t data[] = {0x84, 0xa3, 0x61, 0x67, 
+                    0x65,0x1b,0xa6, 0x67, 
+                    0x65, 0x6e, 0x64, 0x65,
+                    0x72, 0x00, 0xa5, 0x76,
+                    0x61, 0x6c,0x75, 0x65, 
+                    0xcb, 0x40, 0x0c, 0xcc,
+                    0xcc, 0xcc, 0xcc, 0xcc,
+                    0xcd, 0xa6,0x68, 0x65, 
+                    0x69, 0x67, 0x68, 0x74,
+                    0xcb, 0x40, 0x66, 0x80, 
+                    0x00, 0x00, 0x00, 0x00, 
+                    0x00};
+  mpack_tree_t tree;
+  mpack_tree_init_data(&tree, reinterpret_cast<const char *>(data),
+                       sizeof(data));
+  mpack_tree_parse(&tree);
+  
+  mpack_node_t root = mpack_tree_root(&tree);
+  seria::deserialize(user, root);
+  const static double error = 0.0000001;
+  REQUIRE((user.value > 3.6 - error && user.value < 3.6 + error));
+  REQUIRE(user.age == 27);
+  REQUIRE(user.height == 180.0);
 }

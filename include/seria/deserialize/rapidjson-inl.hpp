@@ -142,12 +142,14 @@ deserialize(T &data, const rapidjson::Value &value) {
         throw error(member.m_key, "missing value");
       }
 
-      data.*(member.m_ptr) = *member.m_default_value;
+      member.set(data, *member.m_default_value);
       return;
     }
 
     try {
-      deserialize(data.*(member.m_ptr), value[member.m_key]);
+      typename std::remove_reference_t<decltype(member)>::Type tmp_val;
+      deserialize(tmp_val, value[member.m_key]);
+      member.set(data, tmp_val);
     } catch (type_error &err) {
       err.add_prefix(member.m_key);
       throw err;

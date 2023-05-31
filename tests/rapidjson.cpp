@@ -20,6 +20,26 @@ struct Person {
   Inside inside{};
 };
 
+class User {
+private:
+  Gender gender = Gender::Male;
+public:
+  int age = 1;
+  double height = 180.0;
+  double value = 1.0;
+  
+  Gender get_gender() const {return gender;}
+  bool set_gender(const Gender& new_gender)  {
+    gender = new_gender; 
+    return gender == Gender::Male;
+  }
+  double get_value() const {return value;}
+  void set_value(double new_value)  { value = new_value;}
+  
+  double get_height() const {return height;}
+  void set_height(double new_value)  { height = new_value;}
+};
+
 enum class Child { Boy, Girl };
 
 namespace seria {
@@ -36,6 +56,13 @@ template <> auto register_object<Inside>() {
   return std::make_tuple(member("i_age", &Inside::i_age, 100),
                          member("i_value", &Inside::i_value),
                          member("i_v", &Inside::i_v));
+}
+
+template <> auto register_object<User>() {
+  return std::make_tuple(member("age", &User::age, 32),
+                         member("gender", &User::set_gender,  &User::get_gender, Gender::Female),
+                         member("value", &User::set_value, &User::get_value),
+                         member("height", &User::set_height, &User::get_height, 175.5));
 }
 
 template <> rapidjson::Document serialize(const Child &data) {
@@ -235,4 +262,29 @@ TEST_CASE("deserialize missing value", "[deserialize]") {
   } catch (seria::error &err) {
     REQUIRE(std::strcmp(err.path(), "inside.i_value") == 0);
   }
+}
+
+
+TEST_CASE("stringify an object contains private fields", "[to_string]") {
+  User user{};
+  user.value = 3.6;
+  user.age = 27;
+  
+  auto str = seria::to_string(user);
+  std::string target =
+      R"({"age":27,"gender":0,"value":3.6,"height":180.0})";
+  
+  REQUIRE(str == target);
+}
+
+TEST_CASE("deserialize to an object with private fields", "[deserialize]") {
+  User user{};
+  
+  std::string target =  R"({"value":3.6})";
+  rapidjson::Document document;
+  document.Parse(target.c_str());
+  seria::deserialize(user, document);
+  const static double error = 0.0000001;
+  REQUIRE((user.value > 3.6 - error && user.value < 3.6 + error));
+  REQUIRE(user.age == 32);
 }
